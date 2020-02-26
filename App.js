@@ -1,6 +1,5 @@
-import { getBoundingBox } from "geolocation-utils";
 import { getBoundsOfDistance } from "geolib";
-import { StyleSheet, Dimensions } from "react-native";
+import { StyleSheet, Dimensions, View, Text } from "react-native";
 import MapView, { Circle, PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import React, { Component } from "react";
 
@@ -17,18 +16,62 @@ class App extends Component {
     super();
 
     this.circle = React.createRef();
+
+    this.state = {
+      distance: 1000
+    };
   }
 
-  componentDidUpdate() {
-    console.log(this.circle);
+  componentDidMount() {
+    this.randomDistance();
   }
 
-  render() {
-    const distance = 20000;
+  fitToCircle = () => {
+    const { distance } = this.state;
+
     const bounds = getBoundsOfDistance(
       { latitude: LATITUDE, longitude: LONGITUDE },
       distance
     );
+
+    if (this.map) {
+      this.map.fitToCoordinates(
+        [bounds[0], bounds[1]],
+        { edgePadding: { top: 10, right: 10, bottom: 10, left: 10 } },
+        true
+      );
+    }
+  };
+
+  randomDistance = () => {
+    window.setInterval(() => {
+      const distances = [
+        1000,
+        2000,
+        3000,
+        4000,
+        5000,
+        6000,
+        7000,
+        8000,
+        10000,
+        15000,
+        20000,
+        25000,
+        30000,
+        35000,
+        40000,
+        45000,
+        50000
+      ];
+      const index = Math.floor(Math.random() * 5);
+      this.setState({ distance: distances[index] });
+      this.fitToCircle();
+    }, 3000);
+  };
+
+  render() {
+    const { distance } = this.state;
 
     return (
       <MapView
@@ -43,10 +86,8 @@ class App extends Component {
           this.map = ref;
         }}
         style={{ ...StyleSheet.absoluteFill }}
-        onLayout={() => {
-          window.setTimeout(() => {
-            this.map.fitToCoordinates([bounds[0], bounds[1]], true);
-          }, 3000);
+        onMapReady={() => {
+          this.fitToCircle();
         }}
       >
         <>
@@ -55,17 +96,34 @@ class App extends Component {
               latitude: LATITUDE,
               longitude: LONGITUDE
             }}
-          />
+          >
+            <View
+              style={{
+                backgroundColor: "#fff",
+                borderRadius: 100,
+                width: 100,
+                height: 40,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
+              <Text>{distance} metros</Text>
+            </View>
+          </Marker>
           <Circle
+            ref={ref => (this.circle = ref)}
+            onLayout={() =>
+              this.circle.setNativeProps({
+                fillColor: "rgba(20, 126, 251, 0.3)"
+              })
+            }
             center={{ latitude: LATITUDE, longitude: LONGITUDE }}
             strokeWidth={3}
             strokeColor="#147efb"
-            fillColor="rgba(20, 126, 251, 0.5)"
+            fillColor="rgba(20, 126, 251, 0.3)"
             zIndex={1}
             radius={distance}
-            ref={ref => {
-              this.circle = ref;
-            }}
           />
         </>
       </MapView>
