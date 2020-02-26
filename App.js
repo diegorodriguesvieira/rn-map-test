@@ -64,7 +64,7 @@ class App extends Component {
         45000,
         50000
       ];
-      const index = Math.floor(Math.random() * 5);
+      const index = Math.floor(Math.random() * distances.length);
       this.setState({ distance: distances[index] });
       this.fitToCircle();
     }, 3000);
